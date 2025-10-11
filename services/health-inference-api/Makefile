@@ -1,5 +1,9 @@
 .PHONY: help install test lint format docker kind-load deploy clean logs shell
 
+# Docker variables
+DOCKER_REGISTRY := healthwatch
+IMAGE_VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+
 # Variables
 SERVICE_NAME := health-inference-api
 IMAGE_NAME := healthwatch/$(SERVICE_NAME)
@@ -55,9 +59,27 @@ shell: ## Open Poetry shell
 
 docker-build: ## Build Docker image
 	@echo "$(GREEN)Building Docker image...$(NC)"
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
-	docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(IMAGE_NAME):latest
-	@echo "$(GREEN)✓ Image built: $(IMAGE_NAME):$(IMAGE_TAG)$(NC)"
+	@echo "$(YELLOW)Version: $(IMAGE_VERSION)$(NC)"
+	docker build \
+		--build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
+		--build-arg VCS_REF=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown") \
+		-t $(DOCKER_REGISTRY)/$(SERVICE_NAME):$(IMAGE_VERSION) \
+		-t $(DOCKER_REGISTRY)/$(SERVICE_NAME):latest \
+		.
+	@echo "$(GREEN)✓ Image built successfully$(NC)"
+	@echo "$(YELLOW)Image: $(DOCKER_REGISTRY)/$(SERVICE_NAME):$(IMAGE_VERSION)$(NC)"
+	@echo "$(YELLOW)Image: $(DOCKER_REGISTRY)/$(SERVICE_NAME):latest$(NC)"
+
+docker-inspect: ## Show Docker image details (size, layers)
+	@echo "$(GREEN)Image details:$(NC)"
+	@docker images $(DOCKER_REGISTRY)/$(SERVICE_NAME):latest
+	@echo "\n$(GREEN)Image layers:$(NC)"
+	@docker history $(DOCKER_REGISTRY)/$(SERVICE_NAME):latest --no-trunc
+
+docker-scan: docker-build ## Scan Docker image for vulnerabilities
+	@echo "$(GREEN)Scanning Docker image for vulnerabilities...$(NC)"
+	docker scan $(DOCKER_REGISTRY)/$(SERVICE_NAME):latest || echo "$(YELLOW)Docker scan not available. Install with: brew install docker-scan$(NC)"
+	@echo "$(GREEN)✓ Scan complete$(NC)"
 
 docker-run: ## Run Docker container locally
 	@echo "$(GREEN)Running Docker container...$(NC)"

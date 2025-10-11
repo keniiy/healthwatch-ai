@@ -1,0 +1,46 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# Docs
+docs/
+README.md
+
+# K8s manifests (deployed separately)
+k8s/
+
+# Local env files
+.env
+.env.local
+
+# Poetry config (already copied explicitly)
+poetry.toml
+
+# Logs
+*.log
