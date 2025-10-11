@@ -29,7 +29,7 @@ COPY  pyproject.toml poetry.lock ./
 # - no-interaction: Disable prompts for input
 # - no-ansi: Clean logs in CI/CD
 RUN poetry config virtualenvs.create false \
-    && poetry install --ony main --no-interaction --no-ansi --no-root
+    && poetry install --only main --no-interaction --no-ansi --no-root
 # --no-root: Don't install the current package (we'll do it in the next stage)
 
 # ===========================================
@@ -56,7 +56,7 @@ WORKDIR /app
 # Copy installed Python packages from builder stage
 # This is the magic: we built in stage 1, now we just copy the result
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python#.11/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /usr/local /usr/local`````````````1
 
 # Copy application code
 # .dockerignore prevents. copying .venv/, __pycache__?, etc.
@@ -79,7 +79,8 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
 # Environment variables (can be overridden by K8s)
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8000
+    PORT=8000 \
+    PATH="/usr/local/bin:${PATH}"
 
 # Command variables (can be overridden by K8s)
 # --host 0.0.0.0: Listen on all interfaces (required in containers)
