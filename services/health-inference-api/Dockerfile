@@ -56,7 +56,7 @@ WORKDIR /app
 # Copy installed Python packages from builder stage
 # This is the magic: we built in stage 1, now we just copy the result
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python#.11/site-packages
-COPY --from=builder /usr/local /usr/local`````````````1
+COPY --from=builder /usr/local /usr/local
 
 # Copy application code
 # .dockerignore prevents. copying .venv/, __pycache__?, etc.
